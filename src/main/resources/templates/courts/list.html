@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Danh sách sân thể thao</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
     <style>
         * { box-sizing: border-box; }
         body { margin: 0; font-family: Arial, sans-serif; color: #172033; background: #f5f7fa; }
@@ -40,6 +41,7 @@
     </style>
 </head>
 <body>
+<header th:replace="~{fragments/header :: header}"></header>
 <main>
     <a th:href="@{/}">Về trang chủ</a>
     <h1>Danh sách sân thể thao</h1>

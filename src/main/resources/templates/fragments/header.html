@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<header class="site-header" th:fragment="header">
+    <nav class="site-nav" aria-label="Điều hướng chính">
+        <a class="brand" th:href="@{/}">Sports Booking</a>
+        <div class="nav-links">
+            <a th:href="@{/courts}">Danh sách sân</a>
+            <a th:href="@{/admin}" sec:authorize="hasRole('ADMIN')">Quản trị</a>
+            <a th:href="@{/staff}" sec:authorize="hasAnyRole('STAFF', 'ADMIN')">Nhân viên</a>
+            <a th:href="@{/account}" sec:authorize="isAuthenticated()">Tài khoản</a>
+            <a th:href="@{/login}" sec:authorize="isAnonymous()">Đăng nhập</a>
+            <form th:action="@{/logout}" method="post" sec:authorize="isAuthenticated()">
+                <button class="nav-logout" type="submit">Đăng xuất</button>
+            </form>
+        </div>
+    </nav>
+</header>
+</body>
+</html>

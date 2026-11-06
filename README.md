@@ -48,12 +48,17 @@
 
 ## Đăng nhập hiện tại
 
-Ứng dụng đang dùng đăng nhập mặc định của Spring Security:
+Đăng nhập bằng tài khoản trong bảng `dbo.users`, mật khẩu băm BCrypt.
+Chạy `database/auth-demo.sql` để tạo tài khoản demo trên máy mình.
 
-- Username: `user`
-- Password: xem dòng `Using generated security password` trong log.
+| Tên đăng nhập | Mật khẩu demo | Vai trò |
+|---|---|---|
+| admin_demo | Admin@12345 | ADMIN |
+| staff_demo | Staff@12345 | STAFF |
+| customer_demo | Customer@12345 | CUSTOMER |
 
-Mật khẩu có thể thay đổi mỗi lần khởi động lại ứng dụng.
+Mở `/login` để đăng nhập. Khách chưa đăng nhập vẫn xem được `/courts`.
+Chi tiết quyền và cách kiểm thử nằm trong `docs/AUTH.md`.
 
 ## Kiểm tra biên dịch
 
@@ -65,6 +70,7 @@ Trong Terminal PowerShell:
 
 ## Trạng thái hiện tại
 
-- Có bộ khung Spring Boot và trang chủ.
-- Đã chạy thử kết nối SQL Server trên máy nhóm trưởng.
-  - Chưa triển khai bảng nghiệp vụ và chức năng đặt sân.
+- Có script 7 bảng, dữ liệu mẫu sân và các Entity/Repository.
+- Có danh sách sân, tìm kiếm, lọc môn, phân trang và sắp xếp.
+- Đăng nhập từ database, BCrypt, phân quyền và đăng xuất.
+- Chưa triển khai đăng ký, quản lý sân, lịch và nghiệp vụ đặt sân.
