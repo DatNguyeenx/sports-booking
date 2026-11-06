@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Danh sách sân thể thao</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: Arial, sans-serif; color: #172033; background: #f5f7fa; }
+        main { max-width: 960px; margin: 48px auto; padding: 0 20px; }
+        a { color: #1659ad; }
+        h1 { margin: 24px 0 10px; font-size: 30px; }
+        .description { color: #526073; line-height: 1.6; }
+        .table-container { margin-top: 24px; overflow-x: auto; background: white; border: 1px solid #dce3ec; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 16px 20px; text-align: left; border-bottom: 1px solid #e6ebf1; }
+        th { background: #edf2f8; font-size: 14px; white-space: nowrap; }
+        tbody tr:last-child td { border-bottom: 0; }
+        .price { text-align: right; white-space: nowrap; }
+        .empty { padding: 28px; color: #526073; }
+        @media (max-width: 600px) {
+            main { margin-top: 24px; }
+            h1 { font-size: 25px; }
+            th, td { padding: 14px 12px; }
+        }
+    </style>
+</head>
+<body>
+<main>
+    <a th:href="@{/}">Về trang chủ</a>
+    <h1>Danh sách sân thể thao</h1>
+    <p class="description">Các sân đang hoạt động tại trung tâm. Giá hiển thị cho một sân trong một ca 30 phút.</p>
+    <p th:text="|Có ${#lists.size(courts)} sân đang hoạt động.|">Có 0 sân đang hoạt động.</p>
+
+    <div class="table-container">
+        <p class="empty" th:if="${#lists.isEmpty(courts)}">Chưa có sân đang hoạt động.</p>
+        <table th:unless="${#lists.isEmpty(courts)}" aria-label="Danh sách sân và giá thuê">
+            <thead>
+            <tr>
+                <th scope="col">Mã sân</th>
+                <th scope="col">Môn thể thao</th>
+                <th scope="col" class="price">Giá / 30 phút</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="court : ${courts}">
+                <td th:text="${court.code}">CL01</td>
+                <td th:text="${court.sportName}">Cầu lông</td>
+                <td class="price" th:text="${#numbers.formatDecimal(court.pricePerSlot, 1, 'POINT', 0, 'COMMA') + ' đ'}">50.000 đ</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+</body>
+</html>
