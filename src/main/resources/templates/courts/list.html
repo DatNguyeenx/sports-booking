@@ -7,21 +7,35 @@
     <style>
         * { box-sizing: border-box; }
         body { margin: 0; font-family: Arial, sans-serif; color: #172033; background: #f5f7fa; }
-        main { max-width: 960px; margin: 48px auto; padding: 0 20px; }
+        main { max-width: 1100px; margin: 48px auto; padding: 0 20px; }
         a { color: #1659ad; }
         h1 { margin: 24px 0 10px; font-size: 30px; }
-        .description { color: #526073; line-height: 1.6; }
-        .table-container { margin-top: 24px; overflow-x: auto; background: white; border: 1px solid #dce3ec; border-radius: 8px; }
+        .description, .summary { color: #526073; line-height: 1.6; }
+        .filters { display: flex; flex-wrap: wrap; gap: 16px; align-items: end; padding: 20px; margin: 24px 0; background: white; border: 1px solid #dce3ec; border-radius: 8px; }
+        .field { display: flex; flex-direction: column; gap: 8px; flex: 1 1 150px; }
+        label { font-size: 14px; font-weight: bold; }
+        input, select { width: 100%; min-height: 42px; padding: 9px 10px; border: 1px solid #aab7c7; border-radius: 5px; font: inherit; background: white; color: inherit; }
+        .actions { display: flex; align-items: center; gap: 14px; min-height: 42px; }
+        button, .page-link { display: inline-block; padding: 11px 16px; border: 1px solid #1659ad; border-radius: 5px; font: inherit; }
+        button { background: #1659ad; color: white; cursor: pointer; }
+        button:hover { background: #104786; }
+        .table-container { overflow-x: auto; background: white; border: 1px solid #dce3ec; border-radius: 8px; }
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 16px 20px; text-align: left; border-bottom: 1px solid #e6ebf1; }
         th { background: #edf2f8; font-size: 14px; white-space: nowrap; }
         tbody tr:last-child td { border-bottom: 0; }
         .price { text-align: right; white-space: nowrap; }
-        .empty { padding: 28px; color: #526073; }
+        .empty { padding: 28px; color: #526073; line-height: 1.6; }
+        .pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 20px; }
+        .page-link { text-decoration: none; background: white; }
+        .disabled { padding: 11px 16px; color: #6a7584; }
+        a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid #4c94e8; outline-offset: 3px; }
         @media (max-width: 600px) {
             main { margin-top: 24px; }
             h1 { font-size: 25px; }
             th, td { padding: 14px 12px; }
+            .field { flex-basis: 100%; }
+            .pagination { justify-content: center; }
         }
     </style>
 </head>
@@ -29,12 +43,49 @@
 <main>
     <a th:href="@{/}">Về trang chủ</a>
     <h1>Danh sách sân thể thao</h1>
-    <p class="description">Các sân đang hoạt động tại trung tâm. Giá hiển thị cho một sân trong một ca 30 phút.</p>
-    <p th:text="|Có ${#lists.size(courts)} sân đang hoạt động.|">Có 0 sân đang hoạt động.</p>
+    <p class="description">Tìm sân đang hoạt động tại trung tâm. Giá thuê tính cho mỗi sân trong một ca 30 phút.</p>
 
+    <form class="filters" method="get" th:action="@{/courts}" aria-label="Tìm kiếm và lọc sân">
+        <div class="field">
+            <label for="keyword">Mã sân</label>
+            <input id="keyword" name="keyword" type="search" maxlength="50"
+                   placeholder="Ví dụ: CL01" th:value="${criteria.keyword}">
+        </div>
+        <div class="field">
+            <label for="sportTypeId">Môn thể thao</label>
+            <select id="sportTypeId" name="sportTypeId">
+                <option value="">Tất cả các môn</option>
+                <option th:each="sport : ${sportTypes}" th:value="${sport.id}"
+                        th:text="${sport.name}" th:selected="${sport.id == criteria.sportTypeId}"></option>
+            </select>
+        </div>
+        <div class="field">
+            <label for="sort">Sắp xếp</label>
+            <select id="sort" name="sort">
+                <option value="codeAsc" th:selected="${criteria.sort == 'codeAsc'}">Mã sân A → Z</option>
+                <option value="codeDesc" th:selected="${criteria.sort == 'codeDesc'}">Mã sân Z → A</option>
+                <option value="priceAsc" th:selected="${criteria.sort == 'priceAsc'}">Giá thấp → cao</option>
+                <option value="priceDesc" th:selected="${criteria.sort == 'priceDesc'}">Giá cao → thấp</option>
+            </select>
+        </div>
+        <div class="field">
+            <label for="size">Số sân mỗi trang</label>
+            <select id="size" name="size">
+                <option value="5" th:selected="${criteria.size == 5}">5 sân</option>
+                <option value="10" th:selected="${criteria.size == 10}">10 sân</option>
+                <option value="20" th:selected="${criteria.size == 20}">20 sân</option>
+            </select>
+        </div>
+        <div class="actions">
+            <button type="submit">Tìm kiếm</button>
+            <a th:href="@{/courts}">Xóa bộ lọc</a>
+        </div>
+    </form>
+
+    <p class="summary" th:text="|Tìm thấy ${courtPage.totalElements} sân phù hợp.|">Tìm thấy 0 sân phù hợp.</p>
     <div class="table-container">
-        <p class="empty" th:if="${#lists.isEmpty(courts)}">Chưa có sân đang hoạt động.</p>
-        <table th:unless="${#lists.isEmpty(courts)}" aria-label="Danh sách sân và giá thuê">
+        <p class="empty" th:if="${courtPage.empty}">Không tìm thấy sân phù hợp. Hãy thử mã sân khác hoặc xóa bộ lọc.</p>
+        <table th:unless="${courtPage.empty}" aria-label="Kết quả tìm sân và giá thuê">
             <thead>
             <tr>
                 <th scope="col">Mã sân</th>
@@ -51,6 +102,18 @@
             </tbody>
         </table>
     </div>
+
+    <nav class="pagination" aria-label="Phân trang danh sách sân" th:if="${courtPage.totalPages > 0}">
+        <a class="page-link" rel="prev" th:if="${courtPage.hasPrevious()}"
+           th:href="@{/courts(keyword=${criteria.keyword},sportTypeId=${criteria.sportTypeId},sort=${criteria.sort},size=${criteria.size},page=${courtPage.number - 1})}">← Trang trước</a>
+        <span class="disabled" th:unless="${courtPage.hasPrevious()}" aria-disabled="true">← Trang trước</span>
+
+        <span th:text="|Trang ${courtPage.number + 1} / ${courtPage.totalPages}|">Trang 1 / 1</span>
+
+        <a class="page-link" rel="next" th:if="${courtPage.hasNext()}"
+           th:href="@{/courts(keyword=${criteria.keyword},sportTypeId=${criteria.sportTypeId},sort=${criteria.sort},size=${criteria.size},page=${courtPage.number + 1})}">Trang sau →</a>
+        <span class="disabled" th:unless="${courtPage.hasNext()}" aria-disabled="true">Trang sau →</span>
+    </nav>
 </main>
 </body>
 </html>
