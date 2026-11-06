@@ -1,13 +1,21 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Đặt sân thể thao</title>
+    <title>Đặt sân thể thao | Sports Booking</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
 </head>
 <body>
-<h1>Website đặt sân thể thao</h1>
-<p>Chào mừng bạn đến với hệ thống đặt sân.</p>
-<p><a th:href="@{/courts}">Xem danh sách sân</a></p>
+<header th:replace="~{fragments/header :: header}"></header>
+<main class="page">
+    <section class="card">
+        <h1>Website đặt sân thể thao</h1>
+        <p class="muted">Tra cứu sân cầu lông, bóng đá và bóng rổ tại trung tâm. Giá thuê được tính theo ca 30 phút.</p>
+        <p sec:authorize="isAuthenticated()">Xin chào, <strong sec:authentication="name"></strong>.</p>
+        <a class="button" th:href="@{/courts}">Xem danh sách sân</a>
+    </section>
+</main>
 </body>
 </html>

@@ -188,10 +188,10 @@ class CourtPageIntegrationTests {
     }
 
     @Test
-    void requiresLoginWithCurrentSecurityConfiguration() throws Exception {
+    void permitsCourtBrowsingWithoutLogin() throws Exception {
         mockMvc.perform(get("/courts").accept(MediaType.TEXT_HTML))
-            .andExpect(status().is3xxRedirection())
-            .andExpect(redirectedUrl("/login"));
+            .andExpect(status().isOk())
+            .andExpect(view().name("courts/list"));
     }
 
     @SuppressWarnings("unchecked")
