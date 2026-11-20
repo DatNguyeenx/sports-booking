@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments :: head('Không tìm thấy trang')}"></head>
+<body th:class="${ops} ? 'ops-app' : 'customer-app'">
+<header th:replace="~{fragments :: header}"></header>
+<main id="main-content" th:class="${ops} ? 'ops-main' : 'container page-main'">
+<div th:replace="~{fragments :: alerts}"></div>
+<section class="panel error-view"><div class="error-code">404</div><h1>Không tìm thấy trang</h1><p>Trang bạn tìm có thể đã được chuyển hoặc không còn tồn tại.</p><div th:if="${message!=null and false}" class="alert alert-danger" th:text="${message}"></div><div class="actions"><a class="btn btn-primary" th:href="@{/courts}">Về danh sách sân</a><a class="btn btn-secondary" th:href="@{/bookings}">Lịch đặt của tôi</a></div></section>
+</main><footer th:replace="~{fragments :: footer}"></footer>
+</body></html>
