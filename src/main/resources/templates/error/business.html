@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments :: head('Chưa thể thực hiện yêu cầu')}"></head>
+<body th:class="${ops} ? 'ops-app' : 'customer-app'">
+<header th:replace="~{fragments :: header}"></header>
+<main id="main-content" th:class="${ops} ? 'ops-main' : 'container page-main'">
+<div th:replace="~{fragments :: alerts}"></div>
+<section class="panel error-view"><div class="error-code"><i data-lucide="circle-alert" aria-hidden="true"></i></div><h1>Chưa thể thực hiện yêu cầu</h1><p>Hãy kiểm tra lại thông tin trước khi tiếp tục.</p><div th:if="${message!=null and true}" class="alert alert-danger" th:text="${message}"></div><div class="actions"><a class="btn btn-primary" th:href="@{/courts}">Về danh sách sân</a><a class="btn btn-secondary" th:href="@{/bookings}">Lịch đặt của tôi</a></div></section>
+</main><footer th:replace="~{fragments :: footer}"></footer>
+</body></html>

@@ -72,27 +72,27 @@ $env:RUN_SQLSERVER_TESTS='true'; ./mvnw.cmd -B '-Dtest=AuthIntegrationTest' test
 
 ## Checklist
 
-- [ ] `config/SecurityConfig.java`
-- [ ] `security/AccountStateFilter.java`
-- [ ] `entity/User.java`
-- [ ] `repository/UserRepository.java`
-- [ ] `service/AccountService.java`
-- [ ] `controller/UiContext.java`
-- [ ] `controller/GlobalModelAdvice.java`
-- [ ] `controller/AuthController.java`
-- [ ] `controller/ProfileController.java`
-- [ ] `controller/AdminUserController.java`
-- [ ] `dto/RegistrationForm.java`
-- [ ] `dto/ProfileForm.java`
-- [ ] `exception/BusinessException.java`
-- [ ] `exception/WebExceptionHandler.java`
-- [ ] `ValidationMessages.properties`
-- [ ] `templates/fragments.html`
-- [ ] `templates/login.html`
-- [ ] `templates/register.html`
-- [ ] `templates/profile.html`
-- [ ] `templates/admin/users.html`
-- [ ] `templates/error/403.html`, `404.html`, `500.html`, `business.html`
-- [ ] `SecurityConfigTest.java`
-- [ ] `AuthIntegrationTest.java`
+- [x] `config/SecurityConfig.java`
+- [x] `security/AccountStateFilter.java`
+- [x] `entity/User.java`
+- [x] `repository/UserRepository.java`
+- [x] `service/AccountService.java`
+- [x] `controller/UiContext.java`
+- [x] `controller/GlobalModelAdvice.java`
+- [x] `controller/AuthController.java`
+- [x] `controller/ProfileController.java`
+- [x] `controller/AdminUserController.java`
+- [x] `dto/RegistrationForm.java`
+- [x] `dto/ProfileForm.java`
+- [x] `exception/BusinessException.java`
+- [x] `exception/WebExceptionHandler.java`
+- [x] `ValidationMessages.properties`
+- [x] `templates/fragments.html`
+- [x] `templates/login.html`
+- [x] `templates/register.html`
+- [x] `templates/profile.html`
+- [x] `templates/admin/users.html`
+- [x] `templates/error/403.html`, `404.html`, `500.html`, `business.html`
+- [x] `SecurityConfigTest.java`
+- [x] `AuthIntegrationTest.java`
 - [ ] `README.md` cập nhật

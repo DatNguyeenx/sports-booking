@@ -34,6 +34,11 @@ Script SQL Server (bảng, ràng buộc, chỉ mục, dữ liệu mẫu, kiểm 
 
 Ghi chú tên: trong `AdminController` cũ, các phương thức lưu / sửa / xóa sân tên là `edit`, `save`, `delete`; lưu loại sân là `type`; lưu khung giờ là `slot`. Trong lớp mới nên đặt rõ: `editCourt`, `saveCourt`, `deleteCourt`, `saveType`, `saveSlot`.
 
+## Đã có sẵn trong `main` (phần của Đạt)
+
+- `GlobalModelAdvice` chỉ đưa `me` vào Model. Danh sách loại sân `types` (trước đây nằm trong `WebController.common()`) là phần của bạn: thêm `@ModelAttribute("types")` trong `CourtController` hoặc một `@ControllerAdvice` riêng (ví dụ `CatalogModelAdvice`), không sửa `GlobalModelAdvice` để tránh xung đột.
+- Viết `AdminCatalogController` với `@RequestMapping("/admin")` và hàm `flash()` riêng của bạn; `/admin/users` đã thuộc `AdminUserController`.
+
 ## Việc cải tiến bắt buộc
 
 - Lỗi nghiệp vụ (trùng tên sân / loại sân, khung giờ chồng lấn, xóa bản ghi đang được tham chiếu) hiện **cạnh ô nhập** bằng `BindingResult.rejectValue`, không chỉ là thông báo chung đầu trang.

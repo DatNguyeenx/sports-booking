@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments :: head('Hồ sơ của bạn')}"></head>
+<body th:class="${ops} ? 'ops-app' : 'customer-app'">
+<header th:replace="~{fragments :: header}"></header>
+<main id="main-content" th:class="${ops} ? 'ops-main' : 'container page-main'">
+<div th:replace="~{fragments :: alerts}"></div>
+<div class="auth-layout"><aside class="auth-story"><svg th:replace="~{fragments :: courtArt('pickleball')}"></svg><p class="auth-kicker">Bóng đá · Cầu lông · Pickleball</p><div><h2>Thông tin liên hệ khi đặt sân</h2><p>Nhân viên quầy dùng họ tên và số điện thoại này để xác nhận đơn của bạn.</p></div><ul class="auth-points"><li><i data-lucide="check"></i>Họ tên hiển thị trên đơn đặt sân</li><li><i data-lucide="check"></i>Số điện thoại để quầy liên hệ khi cần</li><li><i data-lucide="check"></i>Email đăng nhập không đổi được</li></ul></aside><section class="auth-form"><h1>Hồ sơ của bạn</h1><p class="mb-4">Email đăng nhập không đổi được.</p><div class="notice mb-4"><i data-lucide="user-round"></i><span th:text="${me.email}"></span></div><form th:action="@{/profile}" method="post" th:object="${form}"><div class="field"><label for="fullName">Họ và tên</label><input class="form-control" id="fullName" type="text" th:field="*{fullName}" maxlength="100" required><div class="field-error" th:errors="*{fullName}"></div></div><div class="field"><label for="phone">Số điện thoại</label><input class="form-control" id="phone" type="tel" th:field="*{phone}" placeholder="Ví dụ: 0912 345 678" required><div class="field-error" th:errors="*{phone}"></div></div><button class="btn btn-primary btn-wide">Lưu hồ sơ</button></form></section></div>
+</main><footer th:replace="~{fragments :: footer}"></footer>
+</body></html>
