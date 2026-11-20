@@ -1,0 +1,41 @@
+@startuml booking-sequence
+skinparam shadowing false
+autonumber
+title Sơ đồ tuần tự – Khách hàng đặt sân (POST /booking)
+
+actor "Khách hàng" as C
+participant "SecurityFilterChain" as Sec
+participant "WebController" as W
+participant "BookingService\n@Transactional" as S
+participant "CourtRepository /\nSlotReservationRepository" as R
+database "SQL Server" as D
+participant "Thymeleaf View" as V
+
+C -> Sec : POST /booking (courtId, date, slotIds, CSRF token)
+Sec -> Sec : kiểm tra phiên đăng nhập, CSRF
+Sec -> W : chuyển request
+activate W
+W -> W : @Valid BookingForm
+W -> S : create(form, currentUser)
+activate S
+S -> D : BEGIN TRANSACTION
+S -> R : lockById(courtId)
+R -> D : SELECT courts, khóa hàng sân\n(PESSIMISTIC_WRITE)
+S -> S : kiểm tra sân hoạt động, ngày tương lai,\ngiờ liên tiếp, quyền đặt hộ
+S -> R : existsByCourtIdAndBookingDateAndTimeSlotId
+R -> D : SELECT slot_reservations
+alt Các khung giờ còn trống
+  S -> R : lưu bookings, booking_details,\nslot_reservations, booking_events
+  R -> D : INSERT (ràng buộc UNIQUE court/date/slot)
+  S -> D : COMMIT (nhả khóa)
+  S --> W : Booking (status = PENDING)
+  W --> C : 302 redirect /bookings/{id} + thông báo thành công
+else Khung giờ đã có người đặt / dữ liệu sai
+  S -> D : ROLLBACK
+  S --> W : BusinessException
+  deactivate S
+  W -> V : WebExceptionHandler chọn trang lỗi
+  V --> C : 409 – trang báo lỗi thân thiện (tiếng Việt)
+end
+deactivate W
+@enduml

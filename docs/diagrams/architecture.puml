@@ -1,0 +1,85 @@
+@startuml architecture
+skinparam shadowing false
+skinparam componentStyle rectangle
+skinparam packageBorderColor #1E6B3C
+title Kiến trúc ứng dụng SportBooking (Controller – Service – Repository – View)
+
+actor "Người dùng" as User
+node "Trình duyệt" as BrowserNode
+node "SocketClient\n(chương trình Java độc lập)" as Client
+
+package "Ứng dụng Spring Boot (cổng 8080)" {
+  package "Bảo mật (config, security)" {
+    [SecurityFilterChain\nđăng nhập, CSRF, phân quyền] as Security
+    [AccountStateFilter\nthu hồi phiên khi khóa / đổi vai trò] as AccountFilter
+  }
+
+  package "View (templates)" {
+    [Thymeleaf templates\nfragments.html: head, header, sidebar, footer] as View
+    [Static: Bootstrap 5, CSS, JS] as Static
+  }
+
+  package "Controller" {
+    [WebController] as WebCtl
+    [AdminController] as AdminCtl
+    [WebExceptionHandler\n@ControllerAdvice] as Advice
+  }
+
+  package "Service (@Transactional)" {
+    [BookingService] as BookingSvc
+    [AvailabilityService] as AvailSvc
+    [CatalogService] as CatalogSvc
+    [AccountService] as AccountSvc
+    [DashboardService] as DashSvc
+  }
+
+  package "Repository (Spring Data JPA)" {
+    [CourtRepository, BookingRepository,\nSlotReservationRepository, ... (9 repository)] as Repos
+  }
+
+  package "Entity / DTO" {
+    [Entity: User, Court, Booking, ...] as Entity
+    [DTO: BookingForm, CourtForm, ...] as Dto
+  }
+
+  package "Đồng thời và mạng" {
+    [PendingBookingExpiryJob\n@Scheduled 5 phút] as Job
+    [SocketServer\nServerSocket + ThreadPool 8 luồng] as SocketSrv
+    [SocketGateway\nđọc dữ liệu read-only] as Gateway
+  }
+}
+
+database "SQL Server\nSportBookingDB" as DB
+
+User --> BrowserNode
+BrowserNode --> Security : HTTP request
+Security --> AccountFilter
+AccountFilter --> WebCtl
+AccountFilter --> AdminCtl
+WebCtl --> BookingSvc
+WebCtl --> AvailSvc
+WebCtl --> AccountSvc
+WebCtl --> DashSvc
+AdminCtl --> CatalogSvc
+AdminCtl --> AccountSvc
+WebCtl ..> Dto : @Valid
+AdminCtl ..> Dto : @Valid
+WebCtl --> View : Model + tên view
+AdminCtl --> View : Model + tên view
+View ..> Static
+View --> BrowserNode : HTML
+Advice ..> View : trang lỗi thân thiện
+
+BookingSvc --> Repos
+AvailSvc --> Repos
+CatalogSvc --> Repos
+AccountSvc --> Repos
+DashSvc --> Repos
+Repos ..> Entity
+Repos --> DB : JDBC (mssql-jdbc)
+
+Job --> BookingSvc
+Client --> SocketSrv : TCP 9090, JSON + LF
+SocketSrv --> Gateway
+Gateway --> Repos
+@enduml
