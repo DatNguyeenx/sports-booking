@@ -33,6 +33,11 @@ Trang lịch của từng sân, danh sách và chi tiết đơn, vòng đời đ
 
 `event()` cũng được `BookingService.create()` (của Linh) gọi khi tạo đơn: để `event()` ở `BookingLifecycleService` dạng public hoặc tách `BookingEventService`, thống nhất với Linh.
 
+## Đã có sẵn trong `main` (phần của Đạt)
+
+- `UiContext` không còn tạo bean `ui`: nhãn vai trò dùng `roles[...]`. Bạn thêm `UiFormats` và đưa nó vào Model bằng một `@ControllerAdvice` riêng (ví dụ `UiFormatsAdvice` với `@ModelAttribute("ui")`), không sửa `UiContext`.
+- Fragment `dateField` và `courtCard` trong `fragments.html` dùng `ui.date`, `ui.money`, `ui.sportKey`: chỉ hoạt động khi `UiFormats` của bạn đã vào `main`.
+
 ## Việc cải tiến bắt buộc
 
 - **Log tên luồng của `@Scheduled`** (cấu hình `spring.task.scheduling.thread-name-prefix=sportbooking-job-`), demo thấy `[sportbooking-job-1]` chạy song song với luồng HTTP.
