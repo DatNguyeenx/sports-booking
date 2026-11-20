@@ -1,0 +1,114 @@
+@startuml erd
+skinparam shadowing false
+skinparam linetype ortho
+hide circle
+title Sơ đồ quan hệ thực thể – SportBookingDB (9 bảng)
+
+entity "users" as USERS {
+  * id : bigint <<PK>>
+  --
+  * email : nvarchar(160) <<UK>>
+  * password : varchar(100)
+  * full_name : nvarchar(100)
+  * phone : nvarchar(20)
+  * role : varchar(20)
+    CHECK IN (ADMIN, STAFF, CUSTOMER)
+  * enabled : bit
+}
+
+entity "sport_types" as SPORT_TYPES {
+  * id : bigint <<PK>>
+  --
+  * name : nvarchar(80) <<UK>>
+  * description : nvarchar(500)
+}
+
+entity "courts" as COURTS {
+  * id : bigint <<PK>>
+  --
+  * name : nvarchar(100) <<UK>>
+  * sport_type_id : bigint <<FK>>
+  * description : nvarchar(1000)
+  * price : decimal(12,2)
+    CHECK > 0
+  * active : bit
+}
+
+entity "time_slots" as TIME_SLOTS {
+  * id : bigint <<PK>>
+  --
+  * start_time : time(0) <<UK>>
+  * end_time : time(0)
+    CHECK end_time > start_time
+  * active : bit
+}
+
+entity "bookings" as BOOKINGS {
+  * id : bigint <<PK>>
+  --
+  * code : varchar(40) <<UK>>
+  * customer_id : bigint <<FK>>
+  * court_id : bigint <<FK>>
+  * booking_date : date
+  * status : varchar(20)
+    CHECK IN (PENDING, CONFIRMED, CHECKED_IN,
+    COMPLETED, CANCELLED, REJECTED)
+  * total : decimal(12,2)
+    CHECK > 0
+  * created_at : datetime2
+}
+
+entity "booking_details" as BOOKING_DETAILS {
+  * id : bigint <<PK>>
+  --
+  * booking_id : bigint <<FK>>
+  * time_slot_id : bigint <<FK>>
+  * price : decimal(12,2)
+    CHECK > 0 (giá chốt lúc đặt)
+}
+
+entity "slot_reservations" as SLOT_RESERVATIONS {
+  * id : bigint <<PK>>
+  --
+  * booking_id : bigint <<FK>>
+  * court_id : bigint <<FK>>
+  * booking_date : date
+  * time_slot_id : bigint <<FK>>
+  ..
+  UNIQUE(court_id, booking_date, time_slot_id)
+}
+
+entity "payments" as PAYMENTS {
+  * id : bigint <<PK>>
+  --
+  * booking_id : bigint <<FK, UK>>
+  * amount : decimal(12,2)
+    CHECK > 0
+  * method : varchar(20)
+    CHECK IN (CASH, TRANSFER)
+  * received_by_id : bigint <<FK>>
+  * paid_at : datetime2
+}
+
+entity "booking_events" as BOOKING_EVENTS {
+  * id : bigint <<PK>>
+  --
+  * booking_id : bigint <<FK>>
+  * actor_id : bigint <<FK>>
+  * action : nvarchar(100)
+  * created_at : datetime2
+}
+
+USERS ||--o{ BOOKINGS : customer
+SPORT_TYPES ||--o{ COURTS : categorizes
+COURTS ||--o{ BOOKINGS : booked
+BOOKINGS ||--|{ BOOKING_DETAILS : contains
+TIME_SLOTS ||--o{ BOOKING_DETAILS : scheduled
+BOOKINGS ||--o{ SLOT_RESERVATIONS : holds
+COURTS ||--o{ SLOT_RESERVATIONS : resource
+TIME_SLOTS ||--o{ SLOT_RESERVATIONS : time
+BOOKINGS ||--o| PAYMENTS : paid
+USERS ||--o{ PAYMENTS : staff
+BOOKINGS ||--o{ BOOKING_EVENTS : history
+USERS ||--o{ BOOKING_EVENTS : actor
+@enduml

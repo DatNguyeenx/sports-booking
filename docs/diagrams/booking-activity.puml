@@ -1,0 +1,46 @@
+@startuml booking-activity
+skinparam shadowing false
+title Sơ đồ hoạt động – quy trình đặt sân và sử dụng sân
+
+|Khách hàng|
+start
+:Tìm sân theo môn, ngày, giờ;
+:Xem chi tiết sân và lịch trống;
+:Chọn ngày và một hoặc nhiều giờ liền nhau;
+|Hệ thống|
+:Tính tổng tiền = giá sân × số giờ;
+|Khách hàng|
+if (Đã đăng nhập?) then (chưa)
+  :Đăng nhập / đăng ký;
+endif
+:Xem lại và xác nhận đặt sân;
+|Hệ thống|
+:Khóa sân, kiểm tra giờ trống;
+if (Còn trống?) then (không)
+  :Báo khung giờ vừa có người đặt;
+  |Khách hàng|
+  :Chọn giờ khác;
+  stop
+else (có)
+  |Hệ thống|
+  :Tạo đơn PENDING, giữ chỗ các khung giờ;
+endif
+|Nhân viên|
+if (Duyệt đơn?) then (từ chối)
+  :Từ chối đơn;
+  |Hệ thống|
+  :Mở lại khung giờ;
+  stop
+else (xác nhận)
+  |Nhân viên|
+  :Xác nhận đơn (CONFIRMED);
+endif
+|Khách hàng|
+:Đến sân đúng ngày chơi;
+|Nhân viên|
+:Xác nhận nhận sân (CHECKED_IN);
+:Thu tiền mặt hoặc chuyển khoản;
+|Hệ thống|
+:Ghi payment, đơn chuyển COMPLETED;
+stop
+@enduml

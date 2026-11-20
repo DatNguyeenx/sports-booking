@@ -1,0 +1,50 @@
+@startuml socket
+skinparam shadowing false
+title Lập trình mạng – SocketServer phục vụ đồng thời nhiều client (giao thức SportBooking/1)
+
+participant "Client 1" as A
+participant "Client 2" as B
+participant "Client 3" as C
+participant "SocketServer\nServerSocket 127.0.0.1:9090" as S
+participant "ThreadPool\n8 worker, hàng đợi 32" as P
+participant "SocketGateway\n(read-only transaction)" as G
+database "SQL Server" as D
+
+== Kết nối ==
+A -> S : connect (timeout kết nối 5 giây)
+B -> S : connect
+C -> S : connect
+S -> P : giao mỗi socket cho một worker\n(đặt soTimeout 10 giây)
+
+== Xử lý song song ==
+par worker 1
+  A -> P : {"command":"LIST_COURTS"} + LF
+  P -> G : handle(line)
+  G -> D : SELECT courts
+  P --> A : {"ok":true,"courts":[{id,name,type,price,active}]} + LF
+else worker 2
+  B -> P : {"command":"CHECK_AVAILABLE","courtId":1,"date":"2026-12-01"} + LF
+  P -> G : handle(line)
+  G -> D : SELECT time_slots, slot_reservations
+  P --> B : {"ok":true,"courtId":1,"date":"...","slots":[{id,start,end,available}]} + LF
+else worker 3
+  C -> P : {"command":"SERVER_INFO"} + LF
+  P --> C : {"ok":true,"protocol":"SportBooking/1","commands":[...]} + LF
+end
+
+== Xử lý lỗi ==
+alt JSON sai, thiếu trường, ngày sai
+  P --> A : {"ok":false,"error":"INVALID_REQUEST"} + LF
+else Lệnh không hỗ trợ
+  P --> A : {"ok":false,"error":"UNKNOWN_COMMAND"} + LF
+else Dòng > 4096 ký tự, quá 10 giây không gửi, hàng đợi đầy
+  P -> A : đóng kết nối
+else Client ngắt đột ngột (RST)
+  P -> P : bắt IOException, giải phóng worker
+end
+
+== Đóng tài nguyên ==
+A -> A : try-with-resources đóng stream và socket
+P -> P : finally: đóng socket, xóa khỏi danh sách theo dõi
+S -> S : ứng dụng dừng (SmartLifecycle.stop):\nđóng ServerSocket, các socket đang mở, shutdown pool
+@enduml

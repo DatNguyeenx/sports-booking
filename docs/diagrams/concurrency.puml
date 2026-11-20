@@ -1,0 +1,43 @@
+@startuml concurrency
+skinparam shadowing false
+title Thiết kế xử lý đồng thời – nhiều khách đặt cùng một khung giờ
+
+|Khách A (luồng 1)|
+start
+:Gửi yêu cầu đặt sân X,\nngày D, khung giờ G;
+|Khách B (luồng 2)|
+:Gửi cùng lúc yêu cầu đặt\nsân X, ngày D, khung giờ G;
+|SQL Server|
+:Tài nguyên dùng chung:\nlịch của sân X (bảng slot_reservations);
+|Khách A (luồng 1)|
+:BEGIN TRANSACTION;
+:Khóa hàng sân X\n(PESSIMISTIC_WRITE);
+note right
+  Chỉ một transaction giữ khóa sân X.
+  Các luồng khác chờ tới khi COMMIT / ROLLBACK.
+end note
+|Khách B (luồng 2)|
+:BEGIN TRANSACTION;
+:Yêu cầu khóa sân X → phải chờ;
+|Khách A (luồng 1)|
+:Kiểm tra slot_reservations: còn trống;
+:INSERT booking, details, reservation;
+:COMMIT → nhả khóa sân X;
+:Đơn PENDING, báo đặt thành công;
+|Khách B (luồng 2)|
+:Có khóa sân X, đọc lại slot_reservations;
+if (Khung giờ G đã có reservation?) then (có)
+  :ROLLBACK;
+  :Báo "Khung giờ vừa được người khác đặt";
+else (không)
+  :INSERT và COMMIT bình thường;
+endif
+|SQL Server|
+:Lớp bảo vệ cuối: UNIQUE(court_id, booking_date, time_slot_id)\nchặn trùng lịch kể cả khi chạy nhiều JVM;
+stop
+
+legend bottom
+  Kiểm thử: SqlServerIntegrationTest.tenConcurrentBookingsExactlyOneWinner
+  10 luồng (ExecutorService + CountDownLatch) cùng đặt một khung giờ → đúng 1 đơn thành công, 9 đơn bị từ chối.
+endlegend
+@enduml

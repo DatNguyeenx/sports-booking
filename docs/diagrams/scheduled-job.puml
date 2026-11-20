@@ -1,0 +1,33 @@
+@startuml scheduled-job
+skinparam shadowing false
+title Tác vụ nền định kỳ – tự động từ chối đơn chờ quá giờ (PendingBookingExpiryJob)
+
+participant "Spring TaskScheduler\n(luồng sportbooking-job-1)" as T
+participant "PendingBookingExpiryJob" as J
+participant "BookingService" as S
+database "SQL Server" as D
+
+loop mỗi 5 phút (bắt đầu sau 30 giây)
+  T -> J : run()
+  J -> S : overduePending(now)
+  S -> D : SELECT đơn PENDING có khung giờ đầu đã bắt đầu
+  D --> S : danh sách id
+  loop với mỗi đơn quá hạn
+    J -> S : expire(id, now) @Transactional
+    S -> D : khóa sân (PESSIMISTIC_WRITE), khóa đơn
+    alt Đơn vẫn PENDING
+      S -> D : status = REJECTED, xóa slot_reservations,\nghi booking_events (actor: system@sportbooking.local)
+      S --> J : true
+    else Nhân viên vừa xử lý đơn
+      S --> J : false (bỏ qua)
+    end
+  end
+  J -> J : log "[sportbooking-job-1] Quét đơn chờ quá giờ: tự động từ chối n đơn"
+end
+
+note over T, J
+  Chạy song song với các luồng HTTP của Tomcat.
+  Dùng chung khóa sân với đặt sân / duyệt đơn nên không xung đột dữ liệu.
+  Tắt bằng EXPIRY_ENABLED=false.
+end note
+@enduml

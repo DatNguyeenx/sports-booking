@@ -1,0 +1,38 @@
+@startuml booking-state
+skinparam shadowing false
+hide empty description
+title Sơ đồ trạng thái đơn đặt sân
+
+[*] --> PENDING : Khách đặt sân /\nnhân viên đặt hộ
+
+state "Chờ xác nhận\n(PENDING)" as PENDING
+state "Đã xác nhận\n(CONFIRMED)" as CONFIRMED
+state "Đã nhận sân\n(CHECKED_IN)" as CHECKED_IN
+state "Hoàn thành\n(COMPLETED)" as COMPLETED
+state "Đã hủy\n(CANCELLED)" as CANCELLED
+state "Bị từ chối\n(REJECTED)" as REJECTED
+
+PENDING --> CONFIRMED : Nhân viên xác nhận
+PENDING --> REJECTED : Nhân viên từ chối /\nhệ thống tự từ chối khi tới giờ chơi
+PENDING --> CANCELLED : Khách hủy\n[chưa thanh toán, còn ≥ 2 giờ]
+CONFIRMED --> CANCELLED : Khách hủy\n[chưa thanh toán, còn ≥ 2 giờ]
+CONFIRMED --> CHECKED_IN : Nhân viên xác nhận nhận sân\n[đúng ngày chơi]
+CONFIRMED --> COMPLETED : Ghi nhận thanh toán\n(tiền mặt / chuyển khoản)
+CHECKED_IN --> COMPLETED : Ghi nhận thanh toán\n(tiền mặt / chuyển khoản)
+
+COMPLETED --> [*]
+CANCELLED --> [*]
+REJECTED --> [*]
+
+note right of CANCELLED
+  Hủy hoặc từ chối: xóa slot_reservations
+  để mở lại khung giờ, giữ lại đơn và chi tiết.
+end note
+note right of COMPLETED
+  Giữ reservation và bản ghi payments (duy nhất mỗi đơn).
+end note
+note bottom of PENDING
+  Mỗi lần chuyển trạng thái ghi một dòng booking_events
+  (người thực hiện, thao tác, thời gian).
+end note
+@enduml

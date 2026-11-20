@@ -1,9 +1,27 @@
 HELP.md
 target/
+**/target/
+*.class
+out/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-/src/main/resources/application-local.properties
+
+### Biến môi trường và thông tin bí mật trên từng máy ###
+.env
+.env.*
+!.env.example
+!.env.example.*
+.env.local.ps1
+**/.env.local.ps1
+
+### Log và file tạm ###
+*.log
+*.pid
+*.tmp
+*.bak
+*.swp
+*~
 
 ### STS ###
 .apt_generated
@@ -32,3 +50,14 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Visual Studio / SQL Server ###
+.vs/
+
+### Hệ điều hành ###
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+### Ghi chú cho công cụ AI ###
+CLAUDE.md

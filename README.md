@@ -1,76 +1,82 @@
-# Sports Booking
+# Sports Booking – phiên bản 2
 
-Đồ án Công nghệ Java — Website đặt sân thể thao đa môn.
+Đồ án Công nghệ Java — Website đặt sân thể thao cho một cơ sở có nhiều sân bóng đá, cầu lông, pickleball.
+
+Phiên bản 2 được tái cấu trúc từ dự án SportBooking-Team-Linh/SportBooking (tag `v1-tham-khao`). Bản thử nghiệm đầu tiên của repo này được giữ ở tag `v0-thu-nghiem`.
 
 ## Phạm vi
 
-- Một trung tâm có nhiều môn thể thao.
-- Một đơn đặt một môn trong cùng một ngày.
-- Có thể đặt nhiều sân, mỗi sân có khoảng giờ khác nhau.
-- Mỗi ca dài 30 phút.
+- Một cơ sở, nhiều sân, giá tính theo giờ, múi giờ Asia/Ho_Chi_Minh.
+- Khách đặt một hoặc nhiều giờ liền nhau; nhân viên xác nhận, nhận sân, thu tiền; quản trị viên quản lý danh mục và tài khoản.
+- Đặc tả chi tiết: [docs/requirements.md](docs/requirements.md). Sơ đồ thiết kế: [docs/diagrams](docs/diagrams).
 
 ## Công nghệ
 
-- Java 25
-- Spring Boot 4.0.9
-- Maven
-- Thymeleaf
-- Spring Data JPA
-- Spring Security
-- SQL Server
+- JDK 21 (biên dịch với `--release 17`)
+- Spring Boot 3.5: Web MVC, Security, Data JPA, Validation, Thymeleaf
+- Microsoft SQL Server
+- Maven Wrapper (`mvnw.cmd`), không cần cài Maven
+- Socket TCP (ServerSocket) và chương trình client Java tách biệt
 
 ## Chuẩn bị database
 
 1. Cài SQL Server và SQL Server Management Studio.
-2. Tạo database `SportsBooking`.
-3. Tạo tài khoản SQL `sports_app`, ánh xạ vào database.
-4. Cấp quyền `db_datareader` và `db_datawriter`.
-5. Bật TCP/IP, cấu hình cổng 1433 và khởi động lại SQL Server.
+2. Tạo database `SportBookingDB`.
+3. Tạo tài khoản SQL `sportbooking_app`, ánh xạ vào database.
+4. Cấp quyền `db_datareader` và `db_datawriter` (chỉ đọc / ghi dữ liệu, không cấp quyền sửa cấu trúc bảng).
+5. Bật TCP/IP trong SQL Server Configuration Manager, cấu hình cổng (thường là 1433) và khởi động lại SQL Server.
+6. Chạy các script trong thư mục `sql/` theo thứ tự số (tạo bảng, dữ liệu mẫu, kiểm tra).
+
+Ứng dụng dùng `spring.jpa.hibernate.ddl-auto=validate`: Hibernate không tự tạo hay sửa bảng, mọi thay đổi cấu trúc phải đưa vào script SQL.
 
 ## Cấu hình trên từng máy
 
-1. Sao chép file:
-   `src/main/resources/application-local.properties.example`
-2. Đổi tên bản sao thành:
-   `application-local.properties`
-3. Điền địa chỉ server, tài khoản và mật khẩu trên máy mình.
-4. File cấu hình riêng đã được `.gitignore` bỏ qua.
+Thông tin kết nối đọc từ biến môi trường, không ghi trong mã nguồn.
 
-## Chạy bằng IntelliJ IDEA
-
-1. Open thư mục dự án, đợi Maven tải thư viện.
-2. Chọn Project SDK là Java 25.
-3. Mở Run → Edit Configurations.
-4. Trong Environment variables, thêm:
-   `SPRING_PROFILES_ACTIVE=local`
-5. Chạy lớp `SportsBookingApplication`.
-6. Truy cập http://localhost:8080.
-
-## Đăng nhập hiện tại
-
-Đăng nhập bằng tài khoản trong bảng `dbo.users`, mật khẩu băm BCrypt.
-Chạy `database/auth-demo.sql` để tạo tài khoản demo trên máy mình.
-
-| Tên đăng nhập | Mật khẩu demo | Vai trò |
-|---|---|---|
-| admin_demo | Admin@12345 | ADMIN |
-| staff_demo | Staff@12345 | STAFF |
-| customer_demo | Customer@12345 | CUSTOMER |
-
-Mở `/login` để đăng nhập. Khách chưa đăng nhập vẫn xem được `/courts`.
-Chi tiết quyền và cách kiểm thử nằm trong `docs/AUTH.md`.
-
-## Kiểm tra biên dịch
-
-Trong Terminal PowerShell:
+1. Sao chép `.env.example.ps1` thành `.env.local.ps1` (file này đã được `.gitignore` bỏ qua, **không commit**).
+2. Điền `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `DEMO_PASSWORD` của máy mình.
+3. Mỗi lần mở cửa sổ PowerShell mới, nạp biến trước khi chạy:
 
 ```powershell
-.\mvnw.cmd compile
+. ./.env.local.ps1
 ```
+
+`DB_PORT` không có giá trị mặc định: thiếu biến này ứng dụng sẽ không kết nối được database.
+
+## Build và chạy
+
+```powershell
+. ./.env.local.ps1
+./mvnw.cmd -B package
+java -jar target/SportBooking-1.0.0.jar
+```
+
+Truy cập http://localhost:8080.
+
+### Chạy bằng IntelliJ IDEA
+
+1. Open thư mục dự án, đợi Maven tải thư viện, chọn Project SDK là JDK 21.
+2. Run → Edit Configurations → tạo cấu hình Application cho lớp `com.sportbooking.SportBookingApplication`.
+3. Trong Environment variables, nhập các biến giống `.env.local.ps1` (IntelliJ không tự đọc file `.ps1`).
+4. Cấu hình chạy nằm trong `.idea/` nên không bị commit.
+
+## Kiểm thử
+
+```powershell
+./mvnw.cmd -B clean test                                  # unit test
+$env:RUN_SQLSERVER_TESTS='true'; ./mvnw.cmd -B clean test # thêm test tích hợp với SQL Server thật
+```
+
+## Phân công và quy trình làm việc
+
+Bảng phân công, nhánh của từng thành viên và danh sách việc: [docs/phan-cong.md](docs/phan-cong.md).
+
+1. Mỗi thành viên làm trên nhánh riêng (`<tên>/<module>`), commit nhỏ, message tiếng Việt.
+2. Trước khi gửi: `git fetch origin`, `git merge origin/main`, chạy `./mvnw.cmd -B clean test` không lỗi.
+3. Mở Pull Request vào `main`; nhóm trưởng duyệt và merge. Không push thẳng lên `main`.
+4. Không commit `.env.local.ps1`, mật khẩu, `target/`, `.idea/`.
 
 ## Trạng thái hiện tại
 
-- Có script 7 bảng, dữ liệu mẫu sân và các Entity/Repository.
-- Có danh sách sân, tìm kiếm, lọc môn, phân trang và sắp xếp.
-- Đăng nhập từ database, BCrypt, phân quyền và đăng xuất.
-- Chưa triển khai đăng ký, quản lý sân, lịch và nghiệp vụ đặt sân.
+- Đã có khung Spring Boot 3.5, cấu hình theo profile `local` / `prod`, tài liệu thiết kế và sơ đồ.
+- Các module (tài khoản, danh mục, đặt sân, quản lý đơn, mạng) đang được từng thành viên chuyển sang theo [docs/phan-cong.md](docs/phan-cong.md).
